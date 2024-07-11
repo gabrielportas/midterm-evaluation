@@ -45,7 +45,7 @@
             color: #47C2FF;
         }
         .wizard-steps li.completed:before {
-            content: '\2714'; /* Check mark symbol */
+            content: '\2714';
         }
         .wizard-steps li:before {
             content: attr(data-step);
@@ -129,7 +129,6 @@
                             <option value="">Select Language</option>
                             <option value="es">Español</option>
                             <option value="en">Inglés</option>
-                            <!-- Add more languages as needed -->
                         </select>
                     </div>
                     <div class="form-group">
