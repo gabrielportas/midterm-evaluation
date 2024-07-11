@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenWrt Configuration Wizard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .wizard-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .wizard-steps {
+            margin-bottom: 20px;
+        }
+        .wizard-steps ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: space-between;
+            margin: 0;
+        }
+        .wizard-steps li {
+            width: 14%;
+            text-align: center;
+            font-size: 14px;
+            color: #999;
+            position: relative;
+            cursor: pointer;
+        }
+        .wizard-steps li.active {
+            color: #000;
+            font-weight: bold;
+        }
+        .wizard-steps li.completed {
+            color: #47C2FF;
+        }
+        .wizard-steps li.completed:before {
+            content: '\2714'; /* Check mark symbol */
+        }
+        .wizard-steps li:before {
+            content: attr(data-step);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #ccc;
+            display: block;
+            margin: 10px auto;
+            line-height: 20px;
+            color: white;
+            font-weight: bold;
+        }
+        .wizard-steps li.completed:before {
+            background-color: #47C2FF;
+        }
+        .wizard-steps li.active:before {
+            background-color: #1D66B4;
+        }
+        .wizard-content {
+            margin-top: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .form-group input[type=text], 
+        .form-group input[type=password],
+        .form-group select {
+            width: calc(100% - 20px);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+            margin-top: 5px;
+        }
+        .form-group button {
+            padding: 10px 20px;
+            background-color: #1D66B4;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .form-group button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .form-group .back-button {
+            background-color: #ccc;
+            color: black;
+        }
+        .form-group .back-button:hover {
+            background-color: #bbb;
+        }
+    </style>
+</head>
+<body>
+    <div class="wizard-container">
+        <div class="wizard-steps">
+            <ul>
+                <li class="active" data-step="1" onclick="goToStep(0)">Choose Language</li>
+                <li data-step="2" onclick="goToStep(1)">Security</li>
+                <li data-step="3" onclick="goToStep(2)">Internet </li>
+                <li data-step="4" onclick="goToStep(3)">Wireless</li>
+                <li data-step="5" onclick="goToStep(4)">Additional Services</li>
+                <li data-step="6" onclick="goToStep(5)">Summary</li>
+            </ul>
+        </div>
+        <div class="wizard-content">
+            <form id="setupForm">
+                <div id="step1" class="step">
+                    <h2>Choose Language</h2>
+                    <div class="form-group">
+                        <label for="language">Language:</label>
+                        <select id="language" name="language" required>
+                            <option value="">Select Language</option>
+                            <option value="es">Español</option>
+                            <option value="en">Inglés</option>
+                            <!-- Add more languages as needed -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="next-button" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+
+                <div id="step2" class="step" style="display: none;">
+                    <h2>Set Admin Password</h2>
+                    <div class="form-group">
+                        <label for="adminPassword">New Admin Password:</label>
+                        <input type="password" id="adminPassword" name="adminPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmAdminPassword">Confirm New Admin Password:</label>
+                        <input type="password" id="confirmAdminPassword" name="confirmAdminPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="back-button" onclick="prevStep()">Back</button>
+                        <button type="button" class="next-button" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+
+                <div id="step3" class="step" style="display: none;">
+                    <h2>Internet Connection Settings</h2>
+                    <div class="form-group">
+                        <label>
+                            <input type="radio" name="connectionType" value="dhcp" checked> DHCP
+                        </label>
+                        <label>
+                            <input type="radio" name="connectionType" value="static"> Static IP
+                        </label>
+                        <label>
+                            <input type="radio" name="connectionType" value="pppoe"> PPPoE
+                        </label>
+                    </div>
+                    <div id="staticIPConfig" class="form-group" style="display:none;">
+                        <input type="text" placeholder="Dirección IP">
+                        <input type="text" placeholder="Máscara de subred">
+                        <input type="text" placeholder="Puerta de enlace">
+                        <input type="text" placeholder="Servidores DNS">
+                    </div>
+                    <div id="pppoeConfig" class="form-group" style="display:none;">
+                        <input type="text" placeholder="Nombre de usuario">
+                        <input type="password" placeholder="Contraseña">
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="back-button" onclick="prevStep()">Back</button>
+                        <button type="button" class="next-button" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+
+                <div id="step4" class="step" style="display: none;">
+                    <h2>Wireless & Mesh Network Configuration</h2>
+                    <div class="form-group">
+                        <label for="wifiSSID">WiFi Network Name (SSID):</label>
+                        <input type="text" id="wifiSSID" name="wifiSSID" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="wifiPassword">WiFi Password:</label>
+                        <input type="password" id="wifiPassword" name="wifiPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enableMesh"> Enable mesh network
+                        </label>
+                    </div>
+                    <div id="meshConfig" class="form-group" style="display:none;">
+                        <input type="text" placeholder="Nombre de la red mesh">
+                        <input type="password" placeholder="Clave de la red mesh">
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="back-button" onclick="prevStep()">Back</button>
+                        <button type="button" class="next-button" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+
+                <div id="step5" class="step" style="display: none;">
+                    <h2>Configuration of Additional Services</h2>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enableVPN"> Enable VPN server
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enableDHCP"> Enable DHCP server
+                        </label>
+                    </div>
+                    <div id="dhcpConfig" class="form-group" style="display:none;">
+                        <input type="text" placeholder="Rango de IPs inicio">
+                        <input type="text" placeholder="Rango de IPs fin">
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="back-button" onclick="prevStep()">Back</button>
+                        <button type="button" class="next-button" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+
+                <div id="step6" class="step" style="display: none;">
+                    <h2>Summary and Confirmation</h2>
+                    <div class="form-group">
+                        <p>Review your settings before finalizing:</p>
+                        <ul id="summaryList"></ul>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="back-button" onclick="prevStep()">Back</button>
+                        <button type="submit">Finish Setup</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        var currentStep = 0;
+        var steps = document.querySelectorAll('.step');
+
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                steps[currentStep].style.display = 'none';
+                currentStep++;
+                steps[currentStep].style.display = 'block';
+                updateWizardProgress();
+                if (currentStep === steps.length - 1) {
+                    generateSummary();
+                }
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                steps[currentStep].style.display = 'none';
+                currentStep--;
+                steps[currentStep].style.display = 'block';
+                updateWizardProgress();
+            }
+        }
+
+        function goToStep(stepIndex) {
+            steps[currentStep].style.display = 'none';
+            currentStep = stepIndex;
+            steps[currentStep].style.display = 'block';
+            updateWizardProgress();
+        }
+
+        function updateWizardProgress() {
+            var stepsList = document.querySelectorAll('.wizard-steps li');
+            stepsList.forEach(function(step, index) {
+                if (index === currentStep) {
+                    step.classList.add('active');
+                    step.classList.remove('completed');
+                } else if (index < currentStep) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                } else {
+                    step.classList.remove('active');
+                    step.classList.remove('completed');
+                }
+            });
+        }
+
+        document.getElementById('setupForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+        });
+
+        document.querySelectorAll('input[name="connectionType"]').forEach((input) => {
+            input.addEventListener('change', function () {
+                document.getElementById('staticIPConfig').style.display = this.value === 'static' ? 'block' : 'none';
+                document.getElementById('pppoeConfig').style.display = this.value === 'pppoe' ? 'block' : 'none';
+            });
+        });
+
+        document.getElementById('enableMesh').addEventListener('change', function () {
+            document.getElementById('meshConfig').style.display = this.checked ? 'block' : 'none';
+        });
+
+        document.getElementById('enableDHCP').addEventListener('change', function () {
+            document.getElementById('dhcpConfig').style.display = this.checked ? 'block' : 'none';
+        });
+
+        function generateSummary() {
+            var summaryList = document.getElementById('summaryList');
+            summaryList.innerHTML = '';
+            var formData = new FormData(document.getElementById('setupForm'));
+            formData.forEach((value, key) => {
+                var listItem = document.createElement('li');
+                listItem.textContent = key + ': ' + value;
+                summaryList.appendChild(listItem);
+            });
+        }
+    </script>
+</body>
+</html>
