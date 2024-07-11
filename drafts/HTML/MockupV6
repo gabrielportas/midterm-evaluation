@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenWrt Configuration Wizard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .wizard-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .wizard-steps {
+            margin-bottom: 20px;
+        }
+
+        .wizard-steps ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: space-between;
+            margin: 0;
+        }
+
+        .wizard-steps li {
+            width: 14%;
+            text-align: center;
+            font-size: 14px;
+            color: #999;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .wizard-steps li.active {
+            color: #000;
+            font-weight: bold;
+        }
+
+        .wizard-steps li:before {
+            content: attr(data-step);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #ccc;
+            display: block;
+            margin: 10px auto;
+            line-height: 20px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .wizard-steps li.active:before {
+            background-color: #1D66B4;
+        }
+
+        .wizard-steps li.completed:before {
+            content: '\2714';
+            background-color: #47C2FF;
+        }
+
+        .wizard-steps li.completed {
+            color: #828282;
+            stroke: #D9D9D9;
+        }
+
+        .wizard-steps li::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            width: calc(100% + 20px);
+            height: 2px;
+            background-color: #ccc;
+            z-index: -1;
+        }
+
+        .wizard-steps li:last-child::after {
+            display: none;
+        }
+
+        .wizard-steps li.completed::after {
+            background-color: #47C2FF;
+        }
+
+        .wizard-content {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input[type=text],
+        .form-group input[type=password],
+        .form-group select {
+            width: calc(100% - 20px);
+            padding: 8px;
+            border: 1px solid #338DCD;
+            border-radius: 3px;
+            box-sizing: border-box;
+            margin-top: 5px;
+            position: relative;
+        }
+
+        .form-group button {
+            padding: 10px 20px;
+            background-color: #1D66B4;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 3px;
+            justify-content: flex-end;
+        }
+
+        .form-group button:hover {
+            background-color: #165a91;
+        }
+
+        .form-group button.back {
+            background-color: rgba(130, 130, 130, 0.5);
+            color: white;
+        }
+
+        .form-group button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .info-icon {
+            display: inline-block;
+            margin-left: 5px;
+            cursor: pointer;
+            background-image: url();
+            width: 16px;
+            height: 16px;
+            background-size: cover;
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            background-size: cover;
+            background-image: url();
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wizard-container">
+        <div class="wizard-steps">
+            <ul>
+                <li class="active" data-step="1" onclick="goToStep(0)">Choose Language</li>
+                <li data-step="2" onclick="goToStep(1)">Security</li>
+                <li data-step="3" onclick="goToStep(2)">Internet</li>
+                <li data-step="4" onclick="goToStep(3)">Wireless</li>
+                <li data-step="5" onclick="goToStep(4)">Additional Services</li>
+                <li data-step="6" onclick="goToStep(5)">Summary</li>
+            </ul>
+        </div>
+        <div class="wizard-content">
+            <form id="setupForm">
+                <div id="step1" class="step">
+                    <h2>Choose Language <span class="info-icon"></span></h2>
+                    <div class="form-group">
+                        <label for="language">Language:</label>
+                        <select id="language" name="language" required>
+                            <option value="">Select Language</option>
+                            <option value="es">Español</option>
+                            <option value="en">Inglés</option>
+                            <option value="de">Alemán</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="back" onclick="cancelSetup()">Cancel</button>
+                        <button type="button" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+
+                <div id="step2" class="step" style="display: none;">
+                    <h2>Security Settings<span class="info-icon"></span></h2>
+                    <div class="form-group">
+                        <label for="deviceName">Device Name:</label>
+                        <input type="text" id="deviceName" name="deviceName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminPassword">New Admin Password:</label>
+                        <div class="password-container">
+                            <input type="password" id="adminPassword" name="adminPassword" required>
+                            <div class="password-toggle" onclick="togglePassword('adminPassword')"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmAdminPassword">Confirm New Admin Password:</label>
+                        <div class="password-container">
+                            <input type="password" id="confirmAdminPassword" name="confirmAdminPassword" required>
+                            <div class="password-toggle" onclick="togglePassword('confirmAdminPassword')"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="back" onclick="prevStep()">Back</button>
+                        <button type="button" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+
+
+                <div id="step3" class="step" style="display: none;">
+                    <h2>Internet <span class="info-icon"></span></h2>
+                    <div class="form-group">
+                        <label>
+                            <input type="radio" name="connectionType" value="dhcp" checked> DHCP
+                        </label>
+                        <label>
+                            <input type="radio" name="connectionType" value="static"> Static IP
+                        </label>
+                        <label>
+                            <input type="radio" name="connectionType" value="pppoe"> PPPoE
+                        </label>
+                    </div>
+                    <div id="staticIPConfig" class="form-group" style="display:none;">
+                        <input type="text" id="staticIP" placeholder="Dirección IP">
+                        <input type="text" id="subnetMask" placeholder="Máscara de subred">
+                        <input type="text" id="gateway" placeholder="Puerta de enlace">
+                        <input type="text" id="dnsServers" placeholder="Servidores DNS">
+                    </div>
+                    <div id="pppoeConfig" class="form-group" style="display:none;">
+                        <input type="text" id="pppoeUsername" placeholder="Nombre de usuario">
+                        <div class="password-container">
+                            <input type="password" id="pppoePassword" placeholder="Contraseña">
+                            <div class="password-toggle" onclick="togglePassword('pppoePassword')"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="back" onclick="prevStep()">Back</button>
+                        <button type="button" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+
+                <div id="step4" class="step" style="display: none;">
+                    <h2>Wireless <span class="info-icon"></span></h2>
+                    <div class="form-group">
+                        <label for="wifiSSID">WiFi Network Name (SSID):</label>
+                        <input type="text" id="wifiSSID" name="wifiSSID" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="wifiPassword">WiFi Password:</label>
+                        <div class="password-container">
+                            <input type="password" id="wifiPassword" name="wifiPassword" required>
+                            <div class="password-toggle" onclick="togglePassword('wifiPassword')"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="back" onclick="prevStep()">Back</button>
+                        <button type="button" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+
+                <div id="step5" class="step" style="display: none;">
+                    <h2>Configuration of Additional Services</h2>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enableVPN"> Enable VPN server
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enableDHCP"> Enable DHCP server
+                        </label>
+                    </div>
+                    <div id="dhcpConfig" class="form-group" style="display:none;">
+                        <input type="text" id="dhcpStartRange" placeholder="DHCP Start Range">
+                        <input type="text" id="dhcpEndRange" placeholder="DHCP End Range">
+                    </div>
+                    <div class="form-group">
+                        <label for="latitude">Latitude:</label>
+                        <input type="text" id="latitude" name="latitude">
+                    </div>
+                    <div class="form-group">
+                        <label for="longitude">Longitude:</label>
+                        <input type="text" id="longitude" name="longitude">
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="back" onclick="prevStep()">Back</button>
+                        <button type="button" onclick="nextStep()">Next</button>
+                    </div>
+                </div>
+
+
+                <div id="step6" class="step" style="display: none;">
+                    <h2>Summary <span class="info-icon"></span></h2>
+                    <div class="form-group">
+                        <p>Review your settings before finalizing:</p>
+                        <ul id="summaryList"></ul>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="back" onclick="prevStep()">Back</button>
+                        <button type="submit">Finish</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        const steps = document.querySelectorAll('.step');
+        const stepsList = document.querySelectorAll('.wizard-steps li');
+
+        function showStep(stepIndex) {
+            steps.forEach((step, index) => {
+                step.style.display = index === stepIndex ? 'block' : 'none';
+                stepsList[index].classList.toggle('active', index === stepIndex);
+                stepsList[index].classList.toggle('completed', index < stepIndex);
+            });
+        }
+
+        function nextStep() {
+            if (validateStep(currentStep)) {
+                if (currentStep < steps.length - 1) {
+                    currentStep++;
+                    showStep(currentStep);
+                }
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+
+        function goToStep(stepIndex) {
+            if (stepIndex <= currentStep) {
+                currentStep = stepIndex;
+                showStep(currentStep);
+            }
+        }
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const toggle = input.nextElementSibling;
+            if (input.type === 'password') {
+                input.type = 'text';
+                toggle.style.backgroundImage = "url('iconos/eye_closed.png')";
+            } else {
+                input.type = 'password';
+                toggle.style.backgroundImage = "url('iconos/eye_open.png')";
+            }
+        }
+
+        function cancelSetup() {
+        }
+
+        document.getElementById('setupForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            if (validateStep(currentStep)) {
+
+            }
+        });
+
+        document.querySelectorAll('input[name="connectionType"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                document.getElementById('staticIPConfig').style.display = this.value === 'static' ? 'block' : 'none';
+                document.getElementById('pppoeConfig').style.display = this.value === 'pppoe' ? 'block' : 'none';
+            });
+        });
+
+        document.getElementById('enableDHCP').addEventListener('change', function () {
+            document.getElementById('dhcpConfig').style.display = this.checked ? 'block' : 'none';
+        });
+
+        function validateStep(stepIndex) {
+            let isValid = true;
+            switch (stepIndex) {
+                case 0:
+                    isValid = validateLanguageStep();
+                    break;
+                case 1:
+                    isValid = validateSecurityStep();
+                    break;
+                case 2:
+                    isValid = validateInternetStep();
+                    break;
+                case 3:
+                    isValid = validateWirelessStep();
+                    break;
+                case 4:
+                    isValid = validateAdditionalServicesStep();
+                    break;
+            }
+            return isValid;
+        }
+
+        function validateLanguageStep() {
+            const language = document.getElementById('language').value;
+            if (!language) {
+                alert('Please select a language.');
+                return false;
+            }
+            return true;
+        }
+
+        function validateSecurityStep() {
+            const password = document.getElementById('adminPassword').value;
+            const confirmPassword = document.getElementById('confirmAdminPassword').value;
+
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return false;
+            }
+
+            const passwordCriteria = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{10,}$/;
+            if (!passwordCriteria.test(password)) {
+                alert('Password must be at least 10 characters long and include numbers, symbols, and a combination of uppercase and lowercase letters.');
+                return false;
+            }
+
+            return true;
+        }
+
+        function validateInternetStep() {
+            const connectionType = document.querySelector('input[name="connectionType"]:checked').value;
+            if (connectionType === 'static') {
+                const staticIP = document.getElementById('staticIP').value;
+                const subnetMask = document.getElementById('subnetMask').value;
+                const gateway = document.getElementById('gateway').value;
+                const dnsServers = document.getElementById('dnsServers').value;
+                if (!validateIP(staticIP) || !validateIP(subnetMask) || !validateIP(gateway) || !validateIP(dnsServers)) {
+                    alert('Please enter valid IP addresses for the static IP configuration.');
+                    return false;
+                }
+            } else if (connectionType === 'pppoe') {
+                const pppoeUsername = document.getElementById('pppoeUsername').value;
+                const pppoePassword = document.getElementById('pppoePassword').value;
+                if (!pppoeUsername || !pppoePassword) {
+                    alert('Please enter both PPPoE username and password.');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function validateWirelessStep() {
+            const wifiSSID = document.getElementById('wifiSSID').value;
+            const wifiPassword = document.getElementById('wifiPassword').value;
+            if (!wifiSSID) {
+                alert('Please enter a WiFi SSID.');
+                return false;
+            }
+            if (wifiPassword.length < 8) {
+                alert('The WiFi password must be at least 8 characters long.');
+                return false;
+            }
+            return true;
+        }
+
+        function validateAdditionalServicesStep() {
+            if (document.getElementById('enableDHCP').checked) {
+                const dhcpStartRange = document.getElementById('dhcpStartRange').value;
+                const dhcpEndRange = document.getElementById('dhcpEndRange').value;
+                if (!validateIP(dhcpStartRange) || !validateIP(dhcpEndRange)) {
+                    alert('Please enter valid IP addresses for the DHCP range.');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function validateIP(ip) {
+            const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            return ipRegex.test(ip);
+        }
+
+        showStep(currentStep);
+    </script>
+</body>
+
+</html>
