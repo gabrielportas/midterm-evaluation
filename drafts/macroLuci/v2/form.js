@@ -8,7 +8,6 @@ return view.extend({
 
         m = new form.Map('openwrt', _('OpenWrt Configuration Wizard'), _('Configure your OpenWrt device.'));
 
-        // Step 1: Choose Language
         s = m.section(form.TypedSection, 'language', _('Step 1: Choose Language'));
         s.anonymous = true;
 
@@ -18,7 +17,6 @@ return view.extend({
         o.value('de', 'Alemán');
         o.rmempty = false;
 
-        // Step 2: Security
         s = m.section(form.TypedSection, 'security', _('Step 2: Security'));
         s.anonymous = true;
 
@@ -46,7 +44,6 @@ return view.extend({
             return true;
         };
 
-        // Step 3: Internet
         s = m.section(form.TypedSection, 'internet', _('Step 3: Internet'));
         s.anonymous = true;
 
@@ -112,7 +109,6 @@ return view.extend({
         o.password = true;
         o.rmempty = false;
 
-        // Step 4: Wireless
         s = m.section(form.TypedSection, 'wireless', _('Step 4: Wireless'));
         s.anonymous = true;
 
@@ -129,7 +125,6 @@ return view.extend({
             return true;
         };
 
-        // Step 5: Additional Services
         s = m.section(form.TypedSection, 'additional_services', _('Step 5: Additional Services'));
         s.anonymous = true;
 
