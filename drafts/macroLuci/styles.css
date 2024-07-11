@@ -1,0 +1,123 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    padding: 20px;
+}
+
+.wizard-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.wizard-steps {
+    margin-bottom: 20px;
+}
+
+.wizard-steps ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+    margin: 0;
+}
+
+.wizard-steps li {
+    width: 14%;
+    text-align: center;
+    font-size: 14px;
+    color: #999;
+    position: relative;
+    cursor: pointer;
+}
+
+.wizard-steps li.active {
+    color: #000;
+    font-weight: bold;
+}
+
+.wizard-steps li:before {
+    content: attr(data-step);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #ccc;
+    display: block;
+    margin: 10px auto;
+    line-height: 20px;
+    color: white;
+    font-weight: bold;
+}
+
+.wizard-steps li.active:before {
+    background-color: #1D66B4;
+}
+
+.wizard-steps li.completed:before {
+    content: '\2714';
+    background-color: #47C2FF;
+}
+
+.wizard-steps li.completed {
+    color: #828282;
+    stroke: #D9D9D9;
+}
+
+.wizard-steps li::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    width: calc(100% + 20px);
+    height: 2px;
+    background-color: #ccc;
+    z-index: -1;
+}
+
+.wizard-steps li:last-child::after {
+    display: none;
+}
+
+.wizard-steps li.completed::after {
+    background-color: #47C2FF;
+}
+
+.wizard-content {
+    display: none;
+}
+
+.wizard-content.active {
+    display: block;
+}
+
+button {
+    background-color: #1D66B4;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #154573;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+button.secondary {
+    background-color: #ccc;
+    color: black;
+}
+
+button.secondary:hover {
+    background-color: #999;
+}
