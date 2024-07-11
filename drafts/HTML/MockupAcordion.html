@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenWrt Configuration Wizard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .accordion {
+            cursor: pointer;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 18px;
+            transition: 0.4s;
+            margin-top: 10px;
+        }
+        .active, .accordion:hover {
+            background-color: #ccc;
+        }
+        .panel {
+            padding: 0 18px;
+            display: none;
+            background-color: white;
+            overflow: hidden;
+        }
+        .panel input, .panel select {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .panel button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .panel button:disabled {
+            background-color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>OpenWrt Configuration Wizard</h1>
+        <p>Set up your device quickly and easily.</p>
+    </header>
+
+    <button class="accordion">Choose language</button>
+    <div class="panel">
+        <select>
+            <option value="es">Español</option>
+            <option value="en">Inglés</option>
+        </select>
+    </div>
+
+    <button class="accordion">Internet Connection Settings</button>
+    <div class="panel">
+        <label>
+            <input type="radio" name="connectionType" value="dhcp" checked> DHCP
+        </label>
+        <label>
+            <input type="radio" name="connectionType" value="static"> Static IP
+        </label>
+        <label>
+            <input type="radio" name="connectionType" value="pppoe"> PPPoE
+        </label>
+        
+        <div id="staticIPConfig" style="display:none;">
+            <input type="text" placeholder="Dirección IP">
+            <input type="text" placeholder="Máscara de subred">
+            <input type="text" placeholder="Puerta de enlace">
+            <input type="text" placeholder="Servidores DNS">
+        </div>
+        
+        <div id="pppoeConfig" style="display:none;">
+            <input type="text" placeholder="Nombre de usuario">
+            <input type="password" placeholder="Contraseña">
+        </div>
+    </div>
+
+    <button class="accordion">Wireless Network Configuration</button>
+    <div class="panel">
+        <input type="text" placeholder="Nombre de la Red (SSID)">
+        <input type="password" placeholder="Contraseña de la Red">
+        <select>
+            <option value="2.4ghz">2.4 GHz</option>
+            <option value="5ghz">5 GHz</option>
+        </select>
+    </div>
+
+    <button class="accordion">Security settings</button>
+    <div class="panel">
+        <input type="password" placeholder="Nueva contraseña del administrador">
+        <input type="password" placeholder="Confirmar nueva contraseña del administrador">
+    </div>
+
+    <button class="accordion">Mesh Network Configuration (Optional)</button>
+    <div class="panel">
+        <label>
+            <input type="checkbox" id="enableMesh"> Enable mesh network
+        </label>
+        <div id="meshConfig" style="display:none;">
+            <input type="text" placeholder="Nombre de la red mesh">
+            <input type="password" placeholder="Clave de la red mesh">
+        </div>
+    </div>
+
+    <button class="accordion">Configuration of Additional Services</button>
+    <div class="panel">
+        <label>
+            <input type="checkbox" id="enableVPN"> Enable VPN server
+        </label>
+        <label>
+            <input type="checkbox" id="enableDHCP"> Enable DHCP server
+        </label>
+        <div id="dhcpConfig" style="display:none;">
+            <input type="text" placeholder="Rango de IPs inicio">
+            <input type="text" placeholder="Rango de IPs fin">
+        </div>
+    </div>
+
+    <button class="accordion">Summary and Confirmation</button>
+    <div class="panel">
+        <p>Summary of all selected settings:</p>
+        <button id="applyButton" disabled>Apply</button>
+    </div>
+
+    <script>
+        var acc = document.getElementsByClassName("accordion");
+        var i;
+
+        for (i = 0; i < acc.length; i++) {
+            acc[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var panel = this.nextElementSibling;
+                if (panel.style.display === "block") {
+                    panel.style.display = "none";
+                } else {
+                    panel.style.display = "block";
+                }
+            });
+        }
+
+        document.getElementsByName('connectionType').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.getElementById('staticIPConfig').style.display = (this.value === 'static') ? 'block' : 'none';
+                document.getElementById('pppoeConfig').style.display = (this.value === 'pppoe') ? 'block' : 'none';
+            });
+        });
+
+        document.getElementById('enableMesh').addEventListener('change', function() {
+            document.getElementById('meshConfig').style.display = this.checked ? 'block' : 'none';
+        });
+
+        document.getElementById('enableDHCP').addEventListener('change', function() {
+            document.getElementById('dhcpConfig').style.display = this.checked ? 'block' : 'none';
+        });
+        
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
+                let allFilled = true;
+                document.querySelectorAll('input').forEach(inp => {
+                    if (!inp.value && inp.type !== 'checkbox' && inp.type !== 'radio') allFilled = false;
+                });
+                document.getElementById('applyButton').disabled = !allFilled;
+            });
+        });
+    </script>
+</body>
+</html>
