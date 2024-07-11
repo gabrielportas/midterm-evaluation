@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenWrt Setup Wizard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-top: 40px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-group button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #45a049;
+        }
+        .step {
+            display: none;
+        }
+        .step.active {
+            display: block;
+        }
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .steps div {
+            width: 30%;
+            padding: 10px;
+            background-color: #ccc;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .steps div.active {
+            background-color: #4CAF50;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OpenWrt Setup Wizard</h1>
+        <div class="steps">
+            <div class="step-header active" data-step="1">1. Language</div>
+            <div class="step-header" data-step="2">2. Internet</div>
+            <div class="step-header" data-step="3">3. Wireless</div>
+            <div class="step-header" data-step="4">4. Security</div>
+            <div class="step-header" data-step="5">5. Summary</div>
+        </div>
+        <form id="setupForm">
+            <div class="step active" data-step="1">
+                <div class="form-group">
+                    <label for="language">Language</label>
+                    <select id="language" name="language">
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                        <option value="de">German</option>
+                        <option value="fr">French</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="button" onclick="nextStep()">Next</button>
+                </div>
+            </div>
+
+            <div class="step" data-step="2">
+                <div class="form-group">
+                    <label for="connectionType">Internet Connection Type</label>
+                    <select id="connectionType" name="connectionType">
+                        <option value="dhcp">DHCP</option>
+                        <option value="static">Static IP</option>
+                        <option value="pppoe">PPPoE</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="button" onclick="prevStep()">Back</button>
+                    <button type="button" onclick="nextStep()">Next</button>
+                </div>
+            </div>
+
+            <div class="step" data-step="3">
+                <div class="form-group">
+                    <label for="ssid">Wireless SSID</label>
+                    <input type="text" id="ssid" name="ssid" required>
+                </div>
+                <div class="form-group">
+                    <label for="wifiPassword">Wireless Password</label>
+                    <input type="password" id="wifiPassword" name="wifiPassword" required>
+                </div>
+                <div class="form-group">
+                    <button type="button" onclick="prevStep()">Back</button>
+                    <button type="button" onclick="nextStep()">Next</button>
+                </div>
+            </div>
+
+            <div class="step" data-step="4">
+                <div class="form-group">
+                    <label for="adminPassword">Admin Password</label>
+                    <input type="password" id="adminPassword" name="adminPassword" required>
+                </div>
+                <div class="form-group">
+                    <button type="button" onclick="prevStep()">Back</button>
+                    <button type="button" onclick="nextStep()">Next</button>
+                </div>
+            </div>
+
+            <div class="step" data-step="5">
+                <h2>Summary</h2>
+                <div class="form-group">
+                    <button type="button" onclick="prevStep()">Back</button>
+                    <button type="submit">Finish</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script>
+        function nextStep() {
+            const activeStep = document.querySelector('.step.active');
+            const nextStep = activeStep.nextElementSibling;
+            if (nextStep && nextStep.classList.contains('step')) {
+                activeStep.classList.remove('active');
+                nextStep.classList.add('active');
+                updateStepHeader(nextStep.dataset.step);
+            }
+        }
+
+        function prevStep() {
+            const activeStep = document.querySelector('.step.active');
+            const prevStep = activeStep.previousElementSibling;
+            if (prevStep && prevStep.classList.contains('step')) {
+                activeStep.classList.remove('active');
+                prevStep.classList.add('active');
+                updateStepHeader(prevStep.dataset.step);
+            }
+        }
+
+        function updateStepHeader(step) {
+            document.querySelectorAll('.step-header').forEach(header => {
+                header.classList.remove('active');
+                if (header.dataset.step === step) {
+                    header.classList.add('active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
